@@ -36,6 +36,7 @@
                         "OnDemandInstanceType",
                         "SpotInstancesType",
                         "AvailabilityZones",
+                        "SubnetIds",
                         "DetailedMonitoring",
                         "KeyName",
                         "SecurityGroupsIds",
@@ -92,6 +93,9 @@
                 },
                 "AvailabilityZones": {
                     "default" : "Availability Zones"
+                },
+                "SubnetIds": {
+                    "default" : "SubentIds"
                 },
                 "DetailedMonitoring": {
                     "default" : "Detailed Monitoring"
@@ -186,7 +190,7 @@
         },
         "SpotInstancesType": {
             "Type": "CommaDelimitedList", 
-            "Default": "c4.large,c3.large", 
+            "Default": "c4.large,c5.large", 
             "Description": "Provide comma seperated List of Spot Instances Available to Elasticgroup"
         },
         "VPC": {
@@ -196,6 +200,10 @@
         "AvailabilityZones": {
             "Type" : "List<AWS::EC2::AvailabilityZone::Name>",
             "Description": "Provde Availability Zones for the Cluster"
+        },
+        "SubnetIds": {
+            "Type" : "List<AWS::EC2::Subnet::Id>",
+            "Description": "Provde Subnet IDs for the Cluster (Must be from selected VPC"
         },
         "DetailedMonitoring": {
             "Type" : "String",
@@ -276,49 +284,49 @@
 "Mappings": {
         "AWSRegionToAMI": {
             "us-east-2": {
-                "AMI": "ami-67ab9e02"
-            }, 
+                "AMI": "ami-64300001"
+            },
             "us-east-1": {
-                "AMI": "ami-5e414e24"
+                "AMI": "ami-aff65ad2"
             }, 
             "us-west-2": {
-                "AMI": "ami-10ed6968"
+                "AMI": "ami-40ddb938"
             }, 
             "us-west-1": {
-                "AMI": "ami-00898660"
+                "AMI": "ami-69677709"
             }, 
             "eu-west-3": {
-                "AMI": "ami-6fa21412"
+                "AMI": "ami-250eb858"
             }, 
             "eu-west-2": {
-                "AMI": "ami-42a64325"
+                "AMI": "ami-2218f945"
             }, 
             "eu-west-1": {
-                "AMI": "ami-880d64f1"
+                "AMI": "ami-2d386654"
             }, 
             "eu-central-1": {
-                "AMI": "ami-63cbae0c"
+                "AMI": "ami-9fc39c74"
             }, 
             "ap-northeast-2": {
-                "AMI": "ami-0acc6e64"
+                "AMI": "ami-9d56f9f3"
             }, 
             "ap-northeast-1": {
-                "AMI": "ami-e3166185"
+                "AMI": "ami-a99d8ad5"
             }, 
             "ap-southeast-2": {
-                "AMI": "ami-36867d54"
+                "AMI": "ami-efda148d"
             }, 
             "ap-southeast-1": {
-                "AMI": "ami-66c98f1a"
+                "AMI": "ami-846144f8"
             }, 
             "ca-central-1": {
-                "AMI": "ami-4b9c182f"
+                "AMI": "ami-897ff9ed"
             }, 
             "ap-south-1": {
-                "AMI": "ami-ca8ad9a5"
+                "AMI": "ami-72edc81d"
             }, 
             "sa-east-1": {
-                "AMI": "ami-69f7b805"
+                "AMI": "ami-4a7e2826"
             }
         }
     },
@@ -351,7 +359,8 @@
                 "group": {
                     "name": {
                         "Ref" : "ElastigroupName"
-                    }, 
+                    },
+                    "region": { "Ref" : "AWS::Region" }, 
                     "strategy": {
                         "risk": {
                             "Ref" : "SpotPercentage"
@@ -381,14 +390,7 @@
                                 "Ref" : "SpotInstancesType"
                             }
                         }, 
-                        "availabilityZones": [
-                            {
-                                "name": "us-east-2a"
-                            }, 
-                            {
-                                "name": "us-east-2b"
-                            }
-                        ], 
+                        "subnetIds": { "Ref" : "SubnetIds" },
                         "launchSpecification": {
                             "tags": [
                                 { 
