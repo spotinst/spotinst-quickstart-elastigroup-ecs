@@ -758,24 +758,24 @@
                     "SubnetIds": {
                         "Fn::Join": [
                             ",",
-                            {
-                                "Fn::GetAtt": [
+                            [
+                                {"Fn::GetAtt": [
                                     "VPCStack",
                                     "Outputs.PublicSubnet1ID"
-                                ],
-                                "Fn::GetAtt": [
+                                ]},
+                                {"Fn::GetAtt": [
                                     "VPCStack",
                                     "Outputs.PublicSubnet2ID"
-                                ],
-                                "Fn::GetAtt": [
+                                ]},
+                                {"Fn::GetAtt": [
                                     "VPCStack",
                                     "Outputs.PublicSubnet3ID"
-                                ],
-                                "Fn::GetAtt": [
+                                ]},
+                                {"Fn::GetAtt": [
                                     "VPCStack",
                                     "Outputs.PublicSubnet4ID"
-                                ]
-                            }
+                                ]}
+                            ]
                         ]
                     }, 
                     "DetailedMonitoring": {
@@ -784,8 +784,8 @@
                     "KeyName": {
                         "Ref": "KeyPairName"
                     },
-                    "": {
-                        "Ref": "SecurityGroupsIds"
+                    "SecurityGroupsIds": {
+                        "Ref": "ECSInstancesSG"
                     },
                     "ProductType": {
                         "Ref": "ProductType"
