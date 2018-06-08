@@ -1,8 +1,46 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This master template create a VPC, ECS cluster and Spotinst Elastigroup for ECS nodes",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Availability Zone Configuration"
+                    },
+                    "Parameters": [
+                        "AvailabilityZones",
+                        "NumberOfAZs"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Network Configuration"
+                    },
+                    "Parameters": [
+                        "VPCCIDR",
+                        "PublicSubnet1CIDR",
+                        "PublicSubnet2CIDR",
+                        "PublicSubnet3CIDR",
+                        "PublicSubnet4CIDR",
+                        "CreatePrivateSubnets",
+                        "PrivateSubnet1ACIDR",
+                        "PrivateSubnet2ACIDR",
+                        "PrivateSubnet3ACIDR",
+                        "PrivateSubnet4ACIDR",
+                        "RemoteAccessCIDR"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Amazon EC2 Configuration"
+                    },
+                    "Parameters": [
+                        "KeyPairName",
+                        "BastionAMIOS",
+                        "BastionInstanceType"
+                    ]
+                },
                 {
                     "Label": {
                         "default": "ECS Configuration"
@@ -32,14 +70,10 @@
                         "CapacityTarget",
                         "CapacityMin",
                         "CapacityMax",
-                        "VPC",
                         "OnDemandInstanceType",
                         "SpotInstancesType",
                         "AvailabilityZones",
-                        "SubnetIds",
                         "DetailedMonitoring",
-                        "KeyName",
-                        "SecurityGroupsIds",
                         "ProductType"
                     ]
                 },
@@ -55,56 +89,107 @@
                         "AutoScalerHeadroomCPU",
                         "AutoScalerHeadroomRAM"
                     ]
+                },
+                {
+                    "Label": {
+                        "default": "AWS Quick Start Configuration"
+                    },
+                    "Parameters": [
+                        "QSS3BucketName",
+                        "QSS3KeyPrefix"
+                    ]
                 }
             ],
             "ParameterLabels": {
+                "NumberOfAZs": {
+                    "default": "Number of Availability Zones"
+                },
+                "AvailabilityZones": {
+                    "default": "Availability Zones"
+                },
+                "CreatePrivateSubnets": {
+                    "default": "Create private subnets"
+                },
+                "BastionAMIOS": {
+                    "default": "Bastion AMI Operating System"
+                },
+                "BastionInstanceType": {
+                    "default": "Bastion Instance Type"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair Name"
+                },
+                "PrivateSubnet1ACIDR": {
+                    "default": "Private subnet 1A CIDR"
+                },
+                "PrivateSubnet2ACIDR": {
+                    "default": "Private subnet 2A CIDR"
+                },
+                "PrivateSubnet3ACIDR": {
+                    "default": "Private subnet 3A CIDR"
+                },
+                "PrivateSubnet4ACIDR": {
+                    "default": "Private subnet 4A CIDR"
+                },
+                "PublicSubnet1CIDR": {
+                    "default": "Public subnet 1 CIDR"
+                },
+                "PublicSubnet2CIDR": {
+                    "default": "Public subnet 2 CIDR"
+                },
+                "PublicSubnet3CIDR": {
+                    "default": "Public subnet 3 CIDR"
+                },
+                "PublicSubnet4CIDR": {
+                    "default": "Public subnet 4 CIDR"
+                },
+                "VPCCIDR": {
+                    "default": "VPC CIDR"
+                },
+                "QSS3BucketName": {
+                    "default": "Quick Start S3 Bucket Name"
+                },
+                "QSS3KeyPrefix": {
+                    "default": "Quick Start S3 Key Prefix"
+                },
+                "S3BucketName": {
+                    "default": "S3 Bucket Name"
+                },
+                "RemoteAccessCIDR": {
+                    "default": "Allowed Bastion External Access CIDR"
+                },
                 "ElastigroupName": {
                     "default": "Elastigroup Name"
-                }, 
+                },
                 "AccessToken": {
-                    "default": "Spotint Access Token" 
-                }, 
+                    "default": "Spotint Access Token"
+                },
                 "AccountID": {
-                    "default": "Spotinst Account ID" 
-                }, 
+                    "default": "Spotinst Account ID"
+                },
                 "ClusterOrientation": {
-                    "default": "Cluster Orientation" 
-                }, 
+                    "default": "Cluster Orientation"
+                },
                 "SpotPercentage": {
                     "default": "Spot Instaces Percantage"
-                }, 
+                },
                 "CapacityTarget": {
                     "default": "Instacnes Capacity Target"
-                }, 
+                },
                 "CapacityMin": {
                     "default": "Instacnes Capacity Minimum"
-                }, 
+                },
                 "CapacityMax": {
                     "default": "Instacnes Capacity Maximum"
                 },
-                "VPC": {
-                    "default": "VPC"
-                }, 
                 "OnDemandInstanceType": {
                     "default": "On-Demand Instace Type"
                 },
                 "SpotInstancesType": {
                     "default": "Spot Instances Type"
                 },
-                "AvailabilityZones": {
-                    "default" : "Availability Zones"
-                },
-                "SubnetIds": {
-                    "default" : "SubentIds"
-                },
                 "DetailedMonitoring": {
-                    "default" : "Detailed Monitoring"
-                },
-                "KeyName": {
-                    "default" : "Key Pair Name"
-                },
-                "SecurityGroupsIds": {
-                    "default" : "Security Groups ID"
+                    "default": "Detailed Monitoring"
                 },
                 "ProductType": {
                     "default": "Product Type"
@@ -131,110 +216,288 @@
                     "default": "AutoScaler Headroom RAM"
                 },
                 "NewECS": {
-                    "default": "New or Existing ECS Cluster?" 
+                    "default": "New or Existing ECS Cluster?"
                 }
-            }    
+            }
         }
-    }, 
+    },
     "Parameters": {
-        "ElastigroupName": {
-            "Type": "String", 
-            "Description": "Provide a Name for the Elastigroup"
-        }, 
-        "AccessToken": {
-            "Type": "String", 
-            "Description": "Provide Spotinst API Token"
-        }, 
-        "AccountID": {
-            "Type": "String", 
-            "Description": "Provide Spotinst Account ID"
-        }, 
-        "ClusterOrientation": {
-            "Type": "String", 
+        "AvailabilityZones": {
+            "Description": "List of Availability Zones to use for the subnets in the VPC. Only two Availability Zones are used for this deployment, and the logical order of your selections is preserved.",
+            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
+        },
+        "CreatePrivateSubnets": {
             "AllowedValues": [
-                "balanced", 
-                "availabilityOriented", 
+                "true",
+                "false"
+            ],
+            "Default": "true",
+            "Description": "Set to false to create only public subnets. If false, the CIDR parameters for ALL private subnets will be ignored.",
+            "Type": "String"
+        },
+        "BastionAMIOS": {
+            "AllowedValues": [
+                "Amazon-Linux-HVM",
+                "CentOS-7-HVM",
+                "Ubuntu-Server-14.04-LTS-HVM",
+                "Ubuntu-Server-16.04-LTS-HVM"
+            ],
+            "Default": "Amazon-Linux-HVM",
+            "Description": "The Linux distribution for the AMI to be used for the bastion instances",
+            "Type": "String"
+        },
+        "BastionInstanceType": {
+            "AllowedValues": [
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ],
+            "Default": "t2.micro",
+            "Description": "Amazon EC2 instance type for the bastion instances",
+            "Type": "String"
+        },
+        "KeyPairName": {
+            "Description": "The name of an existing public/private key pair, which allows you to securely connect to your instance after it launches",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "NumberOfAZs": {
+            "AllowedValues": [
+                "2",
+                "3",
+                "4"
+            ],
+            "Default": "2",
+            "Description": "Number of Availability Zones to use in the VPC. This must match your selections in the list of Availability Zones parameter.",
+            "Type": "String"
+        },
+        "PrivateSubnet1ACIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.0.0/19",
+            "Description": "CIDR block for private subnet 1A located in Availability Zone 1",
+            "Type": "String"
+        },
+        "PrivateSubnet2ACIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.32.0/19",
+            "Description": "CIDR block for private subnet 2A located in Availability Zone 2",
+            "Type": "String"
+        },
+        "PrivateSubnet3ACIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.64.0/19",
+            "Description": "CIDR block for private subnet 3A located in Availability Zone 3",
+            "Type": "String"
+        },
+        "PrivateSubnet4ACIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.96.0/19",
+            "Description": "CIDR block for private subnet 4A located in Availability Zone 4",
+            "Type": "String"
+        },
+        "PublicSubnet1CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.128.0/20",
+            "Description": "CIDR block for the public DMZ subnet 1 located in Availability Zone 1",
+            "Type": "String"
+        },
+        "PublicSubnet2CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.144.0/20",
+            "Description": "CIDR block for the public DMZ subnet 2 located in Availability Zone 2",
+            "Type": "String"
+        },
+        "PublicSubnet3CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.160.0/20",
+            "Description": "CIDR block for the public DMZ subnet 3 located in Availability Zone 3",
+            "Type": "String"
+        },
+        "PublicSubnet4CIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.176.0/20",
+            "Description": "CIDR block for the public DMZ subnet 4 located in Availability Zone 4",
+            "Type": "String"
+        },
+        "VPCCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
+            "Default": "10.0.0.0/16",
+            "Description": "CIDR block for the VPC",
+            "Type": "String"
+        },
+        "QSS3BucketName": {
+            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$",
+            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Default": "aws-quickstart",
+            "Description": "S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).",
+            "Type": "String"
+        },
+        "QSS3KeyPrefix": {
+            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
+            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Default": "quickstart-examples/",
+            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).",
+            "Type": "String"
+        },
+        "RemoteAccessCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/x",
+            "Description": "The CIDR IP range that is permitted to access the bastions. We recommend that you set this value to a trusted IP range.",
+            "Type": "String"
+        },
+        "S3BucketName": {
+            "AllowedPattern": "^[a-z0-9][a-z0-9-.]*$",
+            "Default": "type-unique-value-here-in-lowercase",
+            "Description": "Name of the S3 bucket that will be created for your workload to store data. Enter a unique name that does not include uppercase characters.",
+            "Type": "String"
+        },
+        "ElastigroupName": {
+            "Type": "String",
+            "Description": "Provide a Name for the Elastigroup"
+        },
+        "AccessToken": {
+            "Type": "String",
+            "Description": "Provide Spotinst API Token"
+        },
+        "AccountID": {
+            "Type": "String",
+            "Description": "Provide Spotinst Account ID"
+        },
+        "ClusterOrientation": {
+            "Type": "String",
+            "AllowedValues": [
+                "balanced",
+                "availabilityOriented",
                 "costOriented"
-            ], 
+            ],
             "Default": "balanced",
             "Description": "Specify Cluster Orientation"
-        }, 
+        },
         "SpotPercentage": {
-            "Type": "Number", 
-            "MinValue": "0", 
-            "MaxValue": "100", 
-            "Default": "100", 
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "100",
+            "Default": "100",
             "Description": "Spot Instances Percantage in the Cluster",
             "ConstraintDescription": "Select a Number Between 0 and 100"
-        }, 
+        },
         "CapacityTarget": {
-            "Type": "Number", 
+            "Type": "Number",
             "Description": "Desired Amount of Intances in the Cluster"
-        }, 
+        },
         "CapacityMin": {
-            "Type": "Number",  
+            "Type": "Number",
             "Description": "Minimal Amount of Intances in the Cluster"
-        }, 
+        },
         "CapacityMax": {
-            "Type": "Number", 
+            "Type": "Number",
             "Description": "Maximal Amount of Intances in the Cluster"
-        }, 
+        },
         "OnDemandInstanceType": {
-            "Type": "String", 
-            "Default": "c4.large", 
-            "AllowedValues" : [ 
-                "t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"
+            "Type": "String",
+            "Default": "c4.large",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "g2.2xlarge",
+                "g2.8xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
             ],
-            "ConstraintDescription" : "must be a valid EC2 instance type",
+            "ConstraintDescription": "must be a valid EC2 instance type",
             "Description": "Which on-demand instance type should we use to base Elastigroup upon?"
         },
         "SpotInstancesType": {
-            "Type": "CommaDelimitedList", 
-            "Default": "c4.large,c5.large", 
+            "Type": "CommaDelimitedList",
+            "Default": "c4.large,c5.large",
             "Description": "Provide comma seperated List of Spot Instances Available to Elasticgroup"
         },
-        "VPC": {
-            "Type": "AWS::EC2::VPC::Id",
-            "Description": "Choose VPC For the Elastigroup"
-        },
-        "AvailabilityZones": {
-            "Type" : "List<AWS::EC2::AvailabilityZone::Name>",
-            "Description": "Provde Availability Zones for the Cluster"
-        },
-        "SubnetIds": {
-            "Type" : "List<AWS::EC2::Subnet::Id>",
-            "Description": "Provde Subnet IDs for the Cluster (Must be from selected VPC"
-        },
         "DetailedMonitoring": {
-            "Type" : "String",
+            "Type": "String",
             "AllowedValues": [
-               "True",
-               "False"
+                "True",
+                "False"
             ],
             "Default": "False",
             "Description": "Allow Detailed CloudWatch Monitoring?"
         },
-        "KeyName": {
-            "Description" : "Provide of an existing EC2 KeyPair to enable SSH access to the instances",
-            "Type": "AWS::EC2::KeyPair::KeyName",
-            "ConstraintDescription" : "Must be the name of an existing EC2 KeyPair."
-        },
-        "SecurityGroupsIds": {
-            "Type": "List<AWS::EC2::SecurityGroup::Id>", 
-            "Description": "Provide comma seperated list of Securtiy Group IDs"
-        },
         "ProductType": {
             "Type": "String",
             "AllowedValues": [
-               "Linux/UNIX",
-               "SUSE Linux",
-               "Windows"
+                "Linux/UNIX",
+                "SUSE Linux",
+                "Windows"
             ],
             "Default": "Linux/UNIX",
             "Description": "Choose OS Type"
         },
         "ECSName": {
-            "Description": "Provide a name for the ECS Cluster (Or the existing ECS Cluster Name)", 
+            "Description": "Provide a name for the ECS Cluster (Or the existing ECS Cluster Name)",
             "Type": "String"
         },
         "AutoScaleraEnable": {
@@ -247,27 +510,27 @@
             ]
         },
         "AutoScalerCooldown": {
-            "Description": "Provide the time in seconds, between scaling activities (Ignore if not using AutoScaler)", 
+            "Description": "Provide the time in seconds, between scaling activities (Ignore if not using AutoScaler)",
             "Type": "String",
             "Default": "180"
         },
         "AutoScalerEvaluationPeriods": {
-            "Description": "Provide the number of consecutive periods that should pass before scaling down (Ignore if not using AutoScaler)", 
+            "Description": "Provide the number of consecutive periods that should pass before scaling down (Ignore if not using AutoScaler)",
             "Type": "String",
             "Default": "3"
         },
         "AutoScalerHeadroomUnitCount": {
-            "Description": "Provide the number of Headroom units to keep available at all times (Ignore if not using AutoScaler)", 
+            "Description": "Provide the number of Headroom units to keep available at all times (Ignore if not using AutoScaler)",
             "Type": "String",
             "Default": "0"
         },
         "AutoScalerHeadroomCPU": {
-            "Description": "Provide the amount of CPU units reserved in each Headroom unit (Ignore if not using AutoScaler)", 
+            "Description": "Provide the amount of CPU units reserved in each Headroom unit (Ignore if not using AutoScaler)",
             "Type": "String",
             "Default": "0"
         },
         "AutoScalerHeadroomRAM": {
-            "Description": "Provide the amount in memory (in MB) reserved in each Headroom unit (Ignore if not using AutoScaler)", 
+            "Description": "Provide the amount in memory (in MB) reserved in each Headroom unit (Ignore if not using AutoScaler)",
             "Type": "String",
             "Default": "0"
         },
@@ -281,203 +544,272 @@
             "Default": "New Cluster"
         }
     },
-"Mappings": {
-        "AWSRegionToAMI": {
-            "us-east-2": {
-                "AMI": "ami-64300001"
-            },
-            "us-east-1": {
-                "AMI": "ami-aff65ad2"
-            }, 
-            "us-west-2": {
-                "AMI": "ami-40ddb938"
-            }, 
-            "us-west-1": {
-                "AMI": "ami-69677709"
-            }, 
-            "eu-west-3": {
-                "AMI": "ami-250eb858"
-            }, 
-            "eu-west-2": {
-                "AMI": "ami-2218f945"
-            }, 
-            "eu-west-1": {
-                "AMI": "ami-2d386654"
-            }, 
-            "eu-central-1": {
-                "AMI": "ami-9fc39c74"
-            }, 
-            "ap-northeast-2": {
-                "AMI": "ami-9d56f9f3"
-            }, 
-            "ap-northeast-1": {
-                "AMI": "ami-a99d8ad5"
-            }, 
-            "ap-southeast-2": {
-                "AMI": "ami-efda148d"
-            }, 
-            "ap-southeast-1": {
-                "AMI": "ami-846144f8"
-            }, 
-            "ca-central-1": {
-                "AMI": "ami-897ff9ed"
-            }, 
-            "ap-south-1": {
-                "AMI": "ami-72edc81d"
-            }, 
-            "sa-east-1": {
-                "AMI": "ami-4a7e2826"
-            }
-        }
-    },
-
-    "Conditions": {
-        "CreateECSCluster" : {"Fn::Equals" : [{"Ref" : "NewECS"}, "New Cluster"]}
-
-    },
-
     "Resources": {
-        "ECSCluster": {
-            "Condition": "CreateECSCluster",
-            "Type": "AWS::ECS::Cluster", 
+        "VPCStack": {
+            "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "ClusterName": {
-                    "Ref": "ECSName"
+                "TemplateURL": {
+                    "Fn::Sub": "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template"
+                },
+                "Parameters": {
+                    "AvailabilityZones": {
+                        "Fn::Join": [
+                            ",",
+                            {
+                                "Ref": "AvailabilityZones"
+                            }
+                        ]
+                    },
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "NumberOfAZs": {
+                        "Ref": "NumberOfAZs"
+                    },
+                    "CreatePrivateSubnets": {
+                        "Ref": "CreatePrivateSubnets"
+                    },
+                    "PrivateSubnet1ACIDR": {
+                        "Ref": "PrivateSubnet1CIDR"
+                    },
+                    "PrivateSubnet2ACIDR": {
+                        "Ref": "PrivateSubnet2CIDR"
+                    },
+                    "PrivateSubnet3ACIDR": {
+                        "Ref": "PrivateSubnet3CIDR"
+                    },
+                    "PrivateSubnet4ACIDR": {
+                        "Ref": "PrivateSubnet4CIDR"
+                    },
+                    "PublicSubnet1CIDR": {
+                        "Ref": "PublicSubnet1CIDR"
+                    },
+                    "PublicSubnet2CIDR": {
+                        "Ref": "PublicSubnet2CIDR"
+                    },
+                    "PublicSubnet3CIDR": {
+                        "Ref": "PublicSubnet3CIDR"
+                    },
+                    "PublicSubnet4CIDR": {
+                        "Ref": "PublicSubnet4CIDR"
+                    },
+                    "VPCCIDR": {
+                        "Ref": "VPCCIDR"
+                    }
                 }
             }
         },
-        "SpotinstElastigroup": {
-            "Type": "Custom::elasticgroup", 
+        "BastionStack": {
+            "DependsOn": "VPCStack",
+            "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "ServiceToken": { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:178579023202:function:spotinst-cloudformation" }, 
-                "accessToken": {
-                    "Ref" : "AccessToken"
-                }, 
-                "accoundId": {
-                    "Ref" : "AccountID"
-                }, 
-                "group": {
-                    "name": {
-                        "Ref" : "ElastigroupName"
+                "TemplateURL": {
+                    "Fn::Sub": "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template"
+                },
+                "Parameters": {
+                    "BastionAMIOS": {
+                        "Ref": "BastionAMIOS"
                     },
-                    "region": { "Ref" : "AWS::Region" }, 
-                    "strategy": {
-                        "risk": {
-                            "Ref" : "SpotPercentage"
-                        }, 
-                        "availabilityVsCost": {
-                            "Ref" : "ClusterOrientation"
-                        }
-                    }, 
-                    "capacity": {
-                        "target": {
-                            "Ref" : "CapacityTarget"
-                        }, 
-                        "minimum": {
-                            "Ref" : "CapacityMin"
-                        }, 
-                        "maximum": {
-                            "Ref" : "CapacityMax"
-                        }
+                    "BastionInstanceType": {
+                        "Ref": "BastionInstanceType"
                     },
-                    "scaling": {}, 
-                    "compute": {
-                        "instanceTypes": {
-                            "ondemand": {
-                                "Ref" :  "OnDemandInstanceType"
-                            },
-                            "spot": {
-                                "Ref" : "SpotInstancesType"
-                            }
-                        }, 
-                        "subnetIds": { "Ref" : "SubnetIds" },
-                        "launchSpecification": {
-                            "tags": [
-                                { 
-                                   "tagKey": "Name", 
-                                   "tagValue": {
-                                   "Fn::Sub": "${ECSName}-ECS-Host"
-                                   }
-                                }
-                            ], 
-                            "monitoring": { "Ref"  :  "DetailedMonitoring" }, 
-                            "imageId": {
-                                "Fn::FindInMap": [
-                                    "AWSRegionToAMI", 
-                                    {
-                                        "Ref": "AWS::Region"
-                                    },
-                                    "AMI"
+                    "KeyPairName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "PublicSubnet1ID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PublicSubnet1ID"
+                        ]
+                    },
+                    "PublicSubnet2ID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.PublicSubnet2ID"
+                        ]
+                    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Fn::Sub": "${QSS3KeyPrefix}submodules/quickstart-linux-bastion/"
+                    },
+                    "RemoteAccessCIDR": {
+                        "Ref": "RemoteAccessCIDR"
+                    },
+                    "VPCID": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.VPCID"
+                        ]
+                    }
+                }
+            }
+        },
+        "ECSInstancesSG": {
+            "DependsOn": "BastionStack",
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": "ecs-Spotinst-instances-sg"
+                }],
+                "GroupDescription": "SG for ECS container instances (also permits SSH access from the bastion host)",
+                "VpcId": {
+                    "Fn::GetAtt": [
+                        "VPCStack",
+                        "Outputs.VPCID"
+                    ]
+                },
+                "SecurityGroupIngress": [
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": {
+                        "Ref": "RemoteAccessCIDR"
+                    }
+                }, 
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "80",
+                    "ToPort": "80",
+                    "CidrIp": "0.0.0.0/0"
+                }, 
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "443",
+                    "ToPort": "443",
+                    "CidrIp": "0.0.0.0/0"
+                }
+                ],
+                "SecurityGroupEgress": [
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": "0.0.0.0/0"
+                }, 
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "80",
+                    "ToPort": "80",
+                    "CidrIp": "0.0.0.0/0"
+                }, 
+                {
+                    "IpProtocol": "tcp",
+                    "FromPort": "443",
+                    "ToPort": "443",
+                    "CidrIp": "0.0.0.0/0"
+                }
+                ]
+            }
+        },
+        "ECSStack": {
+            "DependsOn": "ECS and Elastigroup Stack",
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Sub": "https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/Elastigroup-ECS.template"
+                },
+                "Parameters": {
+                    "NewECS": {
+                        "Ref": "NewECS"
+                    },
+                    "QSS3BucketName": {
+                        "Ref": "QSS3BucketName"
+                    },
+                    "QSS3KeyPrefix": {
+                        "Ref": "QSS3KeyPrefix"
+                    },
+                    "ECSName": {
+                        "Ref": "ECSName"
+                    },
+                    "AccessToken": {
+                        "Ref": "AccessToken"
+                    },
+                    "AccountID": {
+                        "Ref": "AccountID"
+                    },
+                    "ElastigroupName": {
+                        "Ref": "ElastigroupName"
+                    },
+                    "SpotPercentage": {
+                        "Ref": "SpotPercentage"
+                    },                    
+                    "ClusterOrientation": {
+                        "Ref": "ClusterOrientation"
+                    },
+                    "CapacityTarget": {
+                        "Ref": "CapacityTarget"
+                    },
+                    "CapacityMin": {
+                        "Ref": "CapacityMin"
+                    },
+                    "CapacityMax": {
+                        "Ref": "CapacityMax"
+                    },
+                    "OnDemandInstanceType": {
+                        "Ref": "OnDemandInstanceType"
+                    },
+                    "SpotInstancesType": {
+                        "Ref": "SpotInstancesType"
+                    },
+                    "SubnetIds": {
+                        "Fn::Join": [
+                            ",",
+                            {
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PublicSubnet1ID"
+                                ],
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PublicSubnet2ID"
+                                ],
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PublicSubnet3ID"
+                                ],
+                                "Fn::GetAtt": [
+                                    "VPCStack",
+                                    "Outputs.PublicSubnet4ID"
                                 ]
-                            },
-                            "keyPair": { "Ref"  :  "KeyName" }, 
-                            "securityGroupIds": { "Ref"  :  "SecurityGroupsIds" },
-                            "iamRole": {
-                                "arn": {"Fn::GetAtt" : ["ECSInstanceProfile", "Arn"]} 
-                                }, 
-                            "userData": {
-                                "Fn::Base64": {
-                                    "Fn::Sub": [ "#!/bin/bash\necho ECS_CLUSTER=${ECSClustername} >> /etc/ecs/ecs.config", { "ECSClustername": {"Ref" : "ECSName"}} ]
-                                }
                             }
-                        }, 
-                        "product": {"Ref"  :  "ProductType"}
+                        ]
                     }, 
-                    "scheduling": {}, 
-                    "thirdPartiesIntegration": {
-                        "ecs": {
-                            "clusterName": { "Ref": "ECSName" },
-                            "autoScale": {
-                                "isEnabled": {"Ref" : "AutoScaleraEnable"},
-                                "cooldown": {"Ref" : "AutoScalerCooldown"},
-                                "down": {
-                                    "evaluationPeriods": {"Ref" : "AutoScalerEvaluationPeriods"}
-                                },
-                                "headroom": {
-                                    "cpuPerUnit": {"Ref" : "AutoScalerHeadroomCPU"},
-                                    "memoryPerUnit": {"Ref" : "AutoScalerHeadroomRAM"},
-                                    "numOfUnits": {"Ref" : "AutoScalerHeadroomUnitCount"}
-                                }
-                            }
-                        }
+                    "DetailedMonitoring": {
+                        "Ref": "DetailedMonitoring"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyPairName"
+                    },
+                    "": {
+                        "Ref": "SecurityGroupsIds"
+                    },
+                    "ProductType": {
+                        "Ref": "ProductType"
+                    },
+                    "AutoScaleraEnable": {
+                        "Ref": "AutoScaleraEnable"
+                    },
+                    "AutoScalerCooldown": {
+                        "Ref": "AutoScalerCooldown"
+                    },
+                    "AutoScalerEvaluationPeriods": {
+                        "Ref": "AutoScalerEvaluationPeriods"
+                    },
+                    "AutoScalerHeadroomCPU": {
+                        "Ref": "AutoScalerHeadroomCPU"
+                    },
+                    "AutoScalerHeadroomRAM": {
+                        "Ref": "AutoScalerHeadroomRAM"
+                    },
+                    "AutoScalerHeadroomUnitCount": {
+                        "Ref": "AutoScalerHeadroomUnitCount"
                     }
                 }
             }
-        },
-        "ECSRole": {
-            "Type": "AWS::IAM::Role", 
-            "Properties": {
-                "Path": "/", 
-                "RoleName": {
-                    "Fn::Sub": "${ECSName}-ECSRole-${AWS::Region}"
-                }, 
-                "AssumeRolePolicyDocument": "{\n    \"Statement\": [{\n        \"Action\": \"sts:AssumeRole\",\n        \"Effect\": \"Allow\",\n        \"Principal\": {\n            \"Service\": \"ec2.amazonaws.com\"\n        }\n    }]\n}\n", 
-                "Policies": [
-                    {
-                        "PolicyName": "ecs-service", 
-                        "PolicyDocument": "{\n    \"Statement\": [{\n        \"Effect\": \"Allow\",\n        \"Action\": [\n            \"ecs:CreateCluster\",\n            \"ecs:DeregisterContainerInstance\",\n            \"ecs:DiscoverPollEndpoint\",\n            \"ecs:Poll\",\n            \"ecs:RegisterContainerInstance\",\n            \"ecs:StartTelemetrySession\",\n            \"ecs:Submit*\",\n            \"logs:CreateLogStream\",\n            \"logs:PutLogEvents\",\n            \"ecr:BatchCheckLayerAvailability\",\n            \"ecr:BatchGetImage\",\n            \"ecr:GetDownloadUrlForLayer\",\n            \"ecr:GetAuthorizationToken\",\n            \"ssm:DescribeAssociation\",\n            \"ssm:GetDeployablePatchSnapshotForInstance\",\n            \"ssm:GetDocument\",\n            \"ssm:GetManifest\",\n            \"ssm:GetParameters\",\n            \"ssm:ListAssociations\",\n            \"ssm:ListInstanceAssociations\",\n            \"ssm:PutInventory\",\n            \"ssm:PutComplianceItems\",\n            \"ssm:PutConfigurePackageResult\",\n            \"ssm:UpdateAssociationStatus\",\n            \"ssm:UpdateInstanceAssociationStatus\",\n            \"ssm:UpdateInstanceInformation\",\n            \"ec2messages:AcknowledgeMessage\",\n            \"ec2messages:DeleteMessage\",\n            \"ec2messages:FailMessage\",\n            \"ec2messages:GetEndpoint\",\n            \"ec2messages:GetMessages\",\n            \"ec2messages:SendReply\",\n            \"cloudwatch:PutMetricData\",\n            \"ec2:DescribeInstanceStatus\",\n            \"ds:CreateComputer\",\n            \"ds:DescribeDirectories\",\n            \"logs:CreateLogGroup\",\n            \"logs:CreateLogStream\",\n            \"logs:DescribeLogGroups\",\n            \"logs:DescribeLogStreams\",\n            \"logs:PutLogEvents\",\n            \"s3:PutObject\",\n            \"s3:GetObject\",\n            \"s3:AbortMultipartUpload\",\n            \"s3:ListMultipartUploadParts\",\n            \"s3:ListBucket\",\n            \"s3:ListBucketMultipartUploads\"\n        ],\n        \"Resource\": \"*\"\n    }]\n}\n"
-                    }
-                ]
-            }
-        }, 
-        "ECSInstanceProfile": {
-            "Type": "AWS::IAM::InstanceProfile", 
-            "Properties": {
-                "Path": "/", 
-                "Roles": [
-                    {
-                        "Ref": "ECSRole"
-                    }
-                ]
-            }
-        }
-    },
-    "Outputs": {
-        "Cluster": {
-            "Description": "A reference to the ECS cluster", 
-            "Value": {
-                "Ref": "ECSName"
-            }
-        }
+        }   
     }
 }
