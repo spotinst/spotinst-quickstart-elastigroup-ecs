@@ -706,7 +706,7 @@
             }
         },
         "ECSStack": {
-            "DependsOn": "ECS and Elastigroup Stack",
+            "DependsOn": "ECSInstancesSG",
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
                 "TemplateURL": {
