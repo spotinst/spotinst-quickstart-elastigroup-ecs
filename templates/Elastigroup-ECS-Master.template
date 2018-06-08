@@ -570,16 +570,16 @@
                         "Ref": "CreatePrivateSubnets"
                     },
                     "PrivateSubnet1ACIDR": {
-                        "Ref": "PrivateSubnet1CIDR"
+                        "Ref": "PrivateSubnet1ACIDR"
                     },
                     "PrivateSubnet2ACIDR": {
-                        "Ref": "PrivateSubnet2CIDR"
+                        "Ref": "PrivateSubnet2ACIDR"
                     },
                     "PrivateSubnet3ACIDR": {
-                        "Ref": "PrivateSubnet3CIDR"
+                        "Ref": "PrivateSubnet3ACIDR"
                     },
                     "PrivateSubnet4ACIDR": {
-                        "Ref": "PrivateSubnet4CIDR"
+                        "Ref": "PrivateSubnet4ACIDR"
                     },
                     "PublicSubnet1CIDR": {
                         "Ref": "PublicSubnet1CIDR"
