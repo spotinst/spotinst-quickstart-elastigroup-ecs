@@ -798,34 +798,6 @@
                                         "VPCStack",
                                         "Outputs.PublicSubnet2ID"
                                     ]
-                                },
-                                {
-                                    "Fn::If": [
-                                        "3AZs",
-                                        {
-                                            "Fn::GetAtt": [
-                                                "VPCStack",
-                                                "Outputs.PublicSubnet3ID"
-                                            ]
-                                        },
-                                        {
-                                            "Ref": "AWS::NoValue"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Fn::If": [
-                                        "4AZs",
-                                        {
-                                            "Fn::GetAtt": [
-                                                "VPCStack",
-                                                "Outputs.PublicSubnet4ID"
-                                            ]
-                                        },
-                                        {
-                                            "Ref": "AWS::NoValue"
-                                        }
-                                    ]
                                 }
                             ]   
                         ]
