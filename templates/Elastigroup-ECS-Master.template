@@ -788,6 +788,12 @@
                         }
                         ] 
                     },
+                    "VPC": {
+                        "Fn::GetAtt": [
+                            "VPCStack",
+                            "Outputs.VPCID"
+                        ]
+                    },
                     "AvailabilityZones": {
                         "Fn::Join": [
                             ",",
