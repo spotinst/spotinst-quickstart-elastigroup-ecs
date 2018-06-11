@@ -784,88 +784,50 @@
                         "Ref": "SpotInstancesType"
                     },
                     "SubnetIds": {
-                        "Fn::If": [
-                            "2AZs",
-                            {
-                                "Fn::Join": [
-                                    ",",
-                                    [
+                         "Fn::Join": [
+                            ",",
+                            [
+                                {
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PublicSubnet1ID"
+                                    ]
+                                },
+                                {
+                                    "Fn::GetAtt": [
+                                        "VPCStack",
+                                        "Outputs.PublicSubnet2ID"
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "3AZs",
                                         {
                                             "Fn::GetAtt": [
                                                 "VPCStack",
-                                                "Outputs.PublicSubnet1ID"
+                                                "Outputs.PublicSubnet3ID"
                                             ]
                                         },
                                         {
-                                            "Fn::GetAtt": [
-                                                "VPCStack",
-                                                "Outputs.PublicSubnet2ID"
-                                            ]
+                                            "Ref": "AWS::NoValue"
                                         }
                                     ]
-                                ]
-                            },
-                            {
-                                "Fn::If": [
-                                    "3AZs",
-                                    {
-                                        "Fn::Join": [
-                                            ",",
-                                            [
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet1ID"
-                                                    ]
-                                                },
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet2ID"
-                                                    ]
-                                                },
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet3ID"
-                                                    ]
-                                                }
+                                },
+                                {
+                                    "Fn::If": [
+                                        "4AZs",
+                                        {
+                                            "Fn::GetAtt": [
+                                                "VPCStack",
+                                                "Outputs.PublicSubnet4ID"
                                             ]
-                                        ]
-                                    },
-                                    {
-                                        "Fn::Join": [
-                                            ",",
-                                            [
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet1ID"
-                                                    ]
-                                                },
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet2ID"
-                                                    ]
-                                                },
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet3ID"
-                                                    ]
-                                                },
-                                                {
-                                                    "Fn::GetAtt": [
-                                                        "VPCStack",
-                                                        "Outputs.PublicSubnet4ID"
-                                                    ]
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                ]
-                            }
+                                        },
+                                        {
+                                            "Ref": "AWS::NoValue"
+                                        }
+                                    ]
+                                }
+                            ]   
                         ]
                     },
                     "DetailedMonitoring": {
