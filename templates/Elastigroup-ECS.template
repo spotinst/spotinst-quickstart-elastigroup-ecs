@@ -1,5 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates an ECS cluster and Spotinst Elastigroup for the ECS nodes",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
